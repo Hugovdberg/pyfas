@@ -1,5 +1,6 @@
 import dataclasses
 from typing import Dict, Generator, Tuple
+import warnings
 
 from . import pfas as p
 from . import soil as s
@@ -26,9 +27,13 @@ class PFASRegistry:
         try:
             spa = self.spa[soil][pfas]
         except KeyError as e:
-            raise ValueError(
-                f"PFAS {pfas_name} is not registered for soil {soil_name}."
-            ) from e
+            warnings.warn(
+                f"PFAS {pfas_name} is not registered for soil {soil_name}, returning a distributed sorption model."
+            )
+            spa = spa_.FabregatPalauSorption(
+                pfas,
+                soil,
+            )
         return pfas, soil, spa
 
     def __iter__(

@@ -4,7 +4,7 @@ from typing import Callable, Optional
 import numpy as np
 import pint
 
-from . import constants as c
+from . import units as u
 
 DispersivityFunction = Callable[["Soil", pint.Quantity[float]], pint.Quantity[float]]
 
@@ -32,7 +32,7 @@ def longitudinal_dispersivity_constant(
 
         Returns:
             pint.Quantity[float]: Longitudinal dispersivity in same units as input L."""
-        return dispersivity.to(L.units)
+        return dispersivity.to(L.units)  # type: ignore
 
     return _longitudinal_dispersivity_constant
 
@@ -53,7 +53,7 @@ def longitudinal_dispersivity_Xu1995(
 
     Returns:
         Longitudinal dispersivity in same units as input L."""
-    return c.Q_(0.83 * np.log10(L.to("m").m) ** 2.414, "m").to(L.units)
+    return u.Q_(0.83 * np.log10(L.to("m").m) ** 2.414, "m").to(L.units)  # type: ignore
 
 
 def relative_permeability(
@@ -71,12 +71,12 @@ def effective_saturation(
     soil: "Soil", theta: pint.Quantity[float]
 ) -> pint.Quantity[float]:
     """Effective saturation of the soil (dimensionless)."""
-    return c.Q_((theta - soil.theta_r) / (soil.theta_s - soil.theta_r), "dimensionless")
+    return u.Q_((theta - soil.theta_r) / (soil.theta_s - soil.theta_r), "dimensionless")
 
 
 def saturation(soil: "Soil", theta: pint.Quantity[float]) -> pint.Quantity[float]:
     """Saturation of the soil (dimensionless)."""
-    return c.Q_(theta / soil.porosity, "dimensionless")
+    return u.Q_(theta / soil.porosity, "dimensionless")
 
 
 def tortuosity_MillingtonQuirk1961(
@@ -94,7 +94,7 @@ def tortuosity_MillingtonQuirk1961(
 
     Returns:
         Tortuosity of the soil (dimensionless)."""
-    return c.Q_((theta ** (7 / 3)) / (soil.theta_s**2), "dimensionless")
+    return u.Q_((theta ** (7 / 3)) / (soil.theta_s**2), "dimensionless")
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
@@ -105,13 +105,13 @@ class VanGenuchtenParameters:
     """Van Genuchten parameter alpha (cm^-1)."""
     n: pint.Quantity[float]
     """Van Genuchten parameter n (dimensionless)."""
-    l: pint.Quantity[float] = c.Q_(0.5, "dimensionless")
+    l: pint.Quantity[float] = u.Q_(0.5, "dimensionless")
     """Van Genuchten parameter l (dimensionless)."""
 
     @property
     def m(self) -> pint.Quantity[float]:
         """Van Genuchten parameter m (dimensionless)."""
-        return c.Q_(1 - 1 / self.n)
+        return u.Q_(1 - 1 / self.n)
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
@@ -136,7 +136,6 @@ class Soil:
 
     porosity: pint.Quantity[float] = dataclasses.field(compare=False)
     """Porosity of the soil (dimensionless)."""
-
     theta_s: pint.Quantity[float] = dataclasses.field(compare=False)
     """Saturated water content of the soil (dimensionless)."""
     theta_r: pint.Quantity[float] = dataclasses.field(compare=False)
@@ -148,6 +147,27 @@ class Soil:
     van_genuchten: VanGenuchtenParameters = dataclasses.field(compare=False)
     """Van Genuchten parameters."""
 
+    f_oc: Optional[pint.Quantity[float]] = dataclasses.field(
+        compare=False, default=None
+    )
+    """Fraction of organic carbon in the soil (dimensionless)."""
+    f_mo: Optional[pint.Quantity[float]] = dataclasses.field(
+        compare=False, default=None
+    )
+    """Fraction of metal oxides in the soil (dimensionless)."""
+    f_sand: Optional[pint.Quantity[float]] = dataclasses.field(
+        compare=False, default=None
+    )
+    """Fraction of sand in the soil (dimensionless)."""
+    f_clay: Optional[pint.Quantity[float]] = dataclasses.field(
+        compare=False, default=None
+    )
+    """Fraction of clay in the soil (dimensionless)."""
+    f_silt: Optional[pint.Quantity[float]] = dataclasses.field(
+        compare=False, default=None
+    )
+    """Fraction of silt in the soil (dimensionless)."""
+
     tracer_fit: Optional[TracerFitParameters] = dataclasses.field(
         compare=False, default=None
     )
@@ -157,9 +177,9 @@ class Soil:
     )
     """Scale factor for Aaw when using the thermodynamic method."""
 
-    dispersivity: Callable[
-        ["Soil", pint.Quantity[float]], pint.Quantity[float]
-    ] = dataclasses.field(default=longitudinal_dispersivity_Xu1995, compare=False)
+    dispersivity: DispersivityFunction = dataclasses.field(
+        default=longitudinal_dispersivity_Xu1995, compare=False
+    )
     """Function for calculating the longitudinal dispersivity of the soil."""
     tortuosity: Callable[
         ["Soil", pint.Quantity[float]], pint.Quantity[float]

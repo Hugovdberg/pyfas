@@ -10,6 +10,7 @@ from . import constants as c
 from . import pfas as p
 from . import soil as s
 from . import solid_phase_adsorption as spa_
+from . import units as u
 
 
 def air_water_interfacial_area_thermodynamic(
@@ -17,20 +18,23 @@ def air_water_interfacial_area_thermodynamic(
     theta: pint.Quantity[float],
 ) -> pint.Quantity[float]:
     """Calculate the air-water interfacial area."""
-    if not sim.soil.soil_roughness_multiplier:
+    soil = sim.soil
+    if soil.soil_roughness_multiplier is None:
         raise ValueError(
             "soil_roughness_multiplier must be set for thermodynamic Aaw method."
         )
-    soil = sim.soil
 
-    g = c.Q_(9.81, "m/s^2")
+    g = u.Q_(9.81, "m/s^2")
 
     m = soil.van_genuchten.m
     alpha = soil.van_genuchten.alpha
     n = soil.van_genuchten.n
     Sr = soil.theta_r / soil.theta_s
     Sw = np.linspace(theta / soil.theta_s, 1.0, 1000)
-    h = lambda Sw: (((1 - Sr) / (Sw - Sr)) ** (1 / m) - 1) ** (1 / n) / alpha
+
+    def h(Sw: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        return (((1 - Sr) / (Sw - Sr)) ** (1 / m) - 1) ** (1 / n) / alpha  # type: ignore
+
     Aaw = sim.rho_w * g * soil.porosity / sim.sigma0 * np.trapz(h(Sw), Sw)
 
     return Aaw * soil.soil_roughness_multiplier
@@ -74,13 +78,13 @@ class Simulation:
     F0: pint.Quantity[float]
     """Total PFAS input during the contaminant pulse in µmol/cm^2."""
 
-    C_rep: pint.Quantity[float] = c.Q_(0.0, "mg/L")
+    C_rep: pint.Quantity[float] = u.Q_(0.0, "mg/L")
     """Representative aqueous concentration of PFAS in mg/L. If unknown, set to 0."""
-    sigma0: pint.Quantity[float] = c.Q_(72.8, "mN/m")  # Water-air at 20 deg C
+    sigma0: pint.Quantity[float] = u.Q_(72.8, "mN/m")  # Water-air at 20 deg C
     """Surface tension of aqueous solution without PFAS in dyn/cm=mN/m."""
-    rho_w: pint.Quantity[float] = c.Q_(1.0, "g/cm^3")
+    rho_w: pint.Quantity[float] = u.Q_(1.0, "g/cm^3")
     """Density of water in g/cm^3."""
-    Temp: pint.Quantity[float] = c.Q_(293.15, "K")
+    Temp: pint.Quantity[float] = u.Q_(293.15, "K")
     """Temperature in K."""
     chi: c.Ionic = dataclasses.field(default=c.Ionic.NONE, compare=False)
     """Coefficient of ionization (chi) (dimensionless)."""
@@ -175,8 +179,8 @@ def volumetric_water_content(
     K_r = sim.q
 
     rel_perm_error = lambda theta: (s.relative_permeability(sim.soil, theta) - K_r).m
-    initial_theta = c.Q_(sim.soil.theta_s + sim.soil.theta_r, "dimensionless") / 2
-    return c.Q_(opt.fsolve(rel_perm_error, initial_theta.m)[0], "dimensionless")
+    initial_theta = u.Q_(sim.soil.theta_s + sim.soil.theta_r, "dimensionless") / 2
+    return u.Q_(opt.fsolve(rel_perm_error, initial_theta.m)[0], "dimensionless")
 
 
 def K_aw(sim: Simulation, C_rep: pint.Quantity[float]) -> pint.Quantity[float]:
@@ -193,7 +197,7 @@ def K_aw(sim: Simulation, C_rep: pint.Quantity[float]) -> pint.Quantity[float]:
         * sim.pfas.Szyszkowski_b
         / (
             sim.chi
-            * c.units.molar_gas_constant
+            * u.units.molar_gas_constant
             * sim.Temp
             * (sim.pfas.Szyszkowski_a + C_rep / sim.pfas.M)
         )
@@ -235,7 +239,7 @@ def simulate(
             Kaw, Aaw, Raw, Kd, Rs, R = _calculate_retardation(sim, theta, sim.C_rep)
         case c.CiFlag.BULK:
             Kaw, Aaw, Raw, Kd, Rs, R = _calculate_retardation(
-                sim, theta, c.Q_(1e-6, "mg/L")
+                sim, theta, u.Q_(1e-6, "mg/L")
             )
             if sim.C_rep > 0:
                 R_old = R
@@ -286,9 +290,9 @@ def simulate(
     else:
         (C_aq, C_s_mass, C_tot) = result
 
-    C_aq = c.Q_(C_aq, "umol/cm^3")
-    C_s_mass = c.Q_(C_s_mass, "umol/g")
-    C_tot = c.Q_(C_tot, "umol/cm^3")
+    C_aq = u.Q_(C_aq, "umol/cm^3")
+    C_s_mass = u.Q_(C_s_mass, "umol/g")
+    C_tot = u.Q_(C_tot, "umol/cm^3")
 
     match sim.SPA_method:
         case c.SPAFlag.KINETIC:
@@ -303,7 +307,7 @@ def simulate(
     C_s = C_s_eq + C_s_kin
     C_total = C_aq_bulk + C_aw + C_s_eq + C_s_kin
 
-    if (C_total - C_tot).max() > c.Q_(1e-6, "umol/cm^3"):
+    if (C_total - C_tot).max() > u.Q_(1e-6, "umol/cm^3"):
         print("Warning: C_total != C_tot")
 
     return SimulationResult(
@@ -342,7 +346,7 @@ def _calculate_retardation(
     Aaw = sim.air_water_interfacial_area(sim, theta)
     Raw = Aaw * Kaw / theta
 
-    Kd = spa_.Freundlich_isotherm(sim.spa.Freundlich_K, sim.spa.Freundlich_N, C_rep)
+    Kd = sim.spa.Kd(C_rep)
     Rs = sim.soil.rho_b * Kd / theta
 
     R = 1 + Raw + Rs

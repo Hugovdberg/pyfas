@@ -1,10 +1,5 @@
 import enum
 
-import pint
-
-units = pint.UnitRegistry()
-Q_ = units.Quantity
-
 
 class AawFlag(enum.Flag):
     """Flag for the type of air-water interfacial area."""
