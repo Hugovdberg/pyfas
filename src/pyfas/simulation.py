@@ -269,6 +269,18 @@ def simulate(
     except pint.errors.DimensionalityError:
         F0: pint.Quantity[float] = (sim.F0 / sim.pfas.M).to("umol/cm^2")
 
+    match sim.SPA_method:
+        case c.SPAFlag.KINETIC:
+            if not isinstance(sim.spa, spa_.KineticSorption):
+                raise TypeError(
+                    "Kinetic sorption model selected but no kinetic sorption parameters provided."
+                )
+            F_s = sim.spa.frac_instant_adsorption
+            alpha_s = sim.spa.kinetic_adsorption_rate
+        case c.SPAFlag.EQUILIBRIUM:
+            F_s = u.Q_(1.0, "dimensionless")
+            alpha_s = u.Q_(0.0, "1/s")
+
     start_time = datetime.datetime.now()
     result, (args, kwargs) = function_call(
         analytical_soln,
@@ -283,8 +295,8 @@ def simulate(
         rhob=sim.soil.rho_b.to("g/cm^3").m,
         D=D.m,
         Kd=Kd.to("cm^3/g").m,
-        alphas=sim.spa.kinetic_adsorption_rate.to("1/s").m,
-        Fs=sim.spa.frac_instant_adsorption.to("dimensionless").m,
+        alphas=alpha_s.to("1/s").m,
+        Fs=F_s.to("dimensionless").m,
         R=R.to("dimensionless").m,
         Raw=Raw.to("dimensionless").m,
         Rs=Rs.to("dimensionless").m,
@@ -301,12 +313,6 @@ def simulate(
     C_aq = u.Q_(C_aq, "umol/cm^3")
     C_s_mass = u.Q_(C_s_mass, "umol/g")
     C_tot = u.Q_(C_tot, "umol/cm^3")
-
-    match sim.SPA_method:
-        case c.SPAFlag.KINETIC:
-            F_s = sim.spa.frac_instant_adsorption
-        case c.SPAFlag.EQUILIBRIUM:
-            F_s = 1
 
     C_aq_bulk = C_aq * theta
     C_aw = C_aq * Kaw * Aaw
