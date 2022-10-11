@@ -1,0 +1,10 @@
+{
+    "typeCheckingMode": "strict",
+    "ignore": [
+        "build",
+        "pyfas.egg-info",
+        "dist",
+        "venv",
+        "__pycache__"
+    ]
+}
