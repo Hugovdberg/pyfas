@@ -176,13 +176,19 @@ def volumetric_water_content(
 ) -> pint.Quantity[float]:
     """Volumetric water content of the soil (dimensionless)."""
     import scipy.optimize as opt
+    import warnings
 
     # Under the assumption that dh/dz = 1, q = K_r
     K_r = sim.q
 
-    rel_perm_error = lambda theta: (s.relative_permeability(sim.soil, theta) - K_r).m
-    initial_theta = u.Q_(sim.soil.theta_s + sim.soil.theta_r, "dimensionless") / 2
-    return u.Q_(opt.fsolve(rel_perm_error, initial_theta.m)[0], "dimensionless")
+    def rel_perm_error(theta: float) -> float:
+        return (s.relative_permeability(sim.soil, u.Q_(theta)) - K_r).m
+
+    initial_theta = (sim.soil.theta_s.m + sim.soil.theta_r.m) / 2
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        theta: float = opt.fsolve(rel_perm_error, initial_theta)[0]
+    return u.Q_(theta, "dimensionless")
 
 
 def K_aw(sim: Simulation, C_rep: pint.Quantity[float]) -> pint.Quantity[float]:
