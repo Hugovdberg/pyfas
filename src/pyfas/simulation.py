@@ -57,6 +57,8 @@ class Simulation:
     pfas: p.PFAS
     soil: s.Soil
     spa: spa_.SPAParameters
+    name: str = dataclasses.field(compare=True)
+    """Name of the simulation."""
 
     # T: pint.Quantity[float]
     # """Total simulation time in seconds."""
