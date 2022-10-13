@@ -6,5 +6,12 @@
         "dist",
         "venv",
         "__pycache__"
-    ]
+    ],
+    "exclude": [
+        "venv",
+        "build",
+        "dist",
+        "pyfas.egg-info",
+        "__pycache__"
+    ],
 }

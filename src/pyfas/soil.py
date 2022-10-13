@@ -64,7 +64,7 @@ def relative_permeability(
     l = soil.van_genuchten.l
     m = soil.van_genuchten.m
 
-    return soil.K_sat * se**l * (1 - (1 - se ** (1 / m)) ** m) ** 2  # type: ignore
+    return soil.K_sat * se**l * (1 - (1 - se ** (1 / m)) ** m) ** 2
 
 
 def effective_saturation(

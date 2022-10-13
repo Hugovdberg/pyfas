@@ -39,15 +39,23 @@ def air_water_interfacial_area_thermodynamic(
     m = soil.van_genuchten.m
     alpha = soil.van_genuchten.alpha
     n = soil.van_genuchten.n
-    Sr = soil.theta_r / soil.theta_s
-    Sw = np.linspace(theta / soil.theta_s, 1.0, 1000)
+    Sr = (soil.theta_r / soil.theta_s).m_as("dimensionless")
+    Sw = linspace((theta / soil.theta_s).m_as("dimensionless"), 1.0, 1000)
 
     def h(Sw: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        return (((1 - Sr) / (Sw - Sr)) ** (1 / m) - 1) ** (1 / n) / alpha  # type: ignore
+        return (((1 - Sr) / (Sw - Sr)) ** (1 / m) - 1) ** (1 / n) / alpha
 
-    Aaw = sim.rho_w * g * soil.porosity / sim.sigma0 * np.trapz(h(Sw), Sw)
+    Aaw = sim.rho_w * g * soil.porosity / sim.sigma0 * trapz(h(Sw), Sw)
 
     return Aaw * soil.soil_roughness_multiplier
+
+
+def linspace(start: float, end: float, num: int) -> npt.NDArray[np.float64]:
+    return np.linspace(start, end, num)  # type: ignore
+
+
+def trapz(y: npt.NDArray[np.float64], x: npt.NDArray[np.float64]) -> float:
+    return np.trapz(y, x)  # type: ignore
 
 
 def air_water_interfacial_area_quadratic(
@@ -232,7 +240,7 @@ def K_aw(sim: Simulation, C_rep: pint.Quantity[float]) -> pint.Quantity[float]:
         * sim.pfas.Szyszkowski_b
         / (
             sim.chi
-            * u.units.molar_gas_constant
+            * u.Q_(1, u.units.molar_gas_constant)
             * sim.Temp
             * (sim.pfas.Szyszkowski_a + C_rep / sim.pfas.M)
         )
@@ -261,40 +269,44 @@ def simulate(
     from pfas_leach_screening.analytical_soln import analytical_soln
 
     theta = volumetric_water_content(sim)
-    v = (sim.q / theta).to("cm/s")
-    D = coefficient_of_dispersion(sim, v, theta).to("cm^2/s")
+    v = sim.q / theta
+    D = coefficient_of_dispersion(sim, v, theta)
 
     try:
         Ci = sim.Ci.to("umol/cm^3")
     except pint.errors.DimensionalityError:
-        Ci = (sim.Ci / sim.pfas.M).to("umol/cm^3")
+        Ci = sim.Ci / sim.pfas.M
 
     match sim.Ci_method:
         case c.CiFlag.AQUEOUS:
-            Kaw, Aaw, Raw, Kd, Rs, R = _calculate_retardation(sim, theta, sim.C_rep)
+            Kaw, Aaw, Raw, Kd, Rs, R_total = _calculate_retardation(
+                sim, theta, sim.C_rep
+            )
         case c.CiFlag.BULK:
-            Kaw, Aaw, Raw, Kd, Rs, R = _calculate_retardation(
+            Kaw, Aaw, Raw, Kd, Rs, R_total = _calculate_retardation(
                 sim, theta, u.Q_(1e-6, "mg/L")
             )
             if sim.C_rep > 0:
-                R_old = R
+                R_old = R_total
                 for _ in range(10):
-                    C_rep = sim.C_rep / (R * theta)
-                    Kaw, Aaw, Raw, Kd, Rs, R = _calculate_retardation(sim, theta, C_rep)
-                    if (R - R_old).m < 1e-3:
+                    C_rep = sim.C_rep / (R_total * theta)
+                    Kaw, Aaw, Raw, Kd, Rs, R_total = _calculate_retardation(
+                        sim, theta, C_rep
+                    )
+                    if (R_total - R_old).m < 1e-3:
                         break
-                    R_old = R
+                    R_old = R_total
                 else:
                     raise RuntimeError(
                         "Failed to converge on C_rep within 10 iterations."
                     )
 
-            Ci = Ci / (R * theta)
+            Ci = Ci / (R_total * theta)
 
     try:
-        F0 = sim.F0.to("umol/cm^2")
+        pfas_total = sim.F0.to("umol/cm^2")
     except pint.errors.DimensionalityError:
-        F0: pint.Quantity[float] = (sim.F0 / sim.pfas.M).to("umol/cm^2")
+        pfas_total: pint.Quantity[float] = (sim.F0 / sim.pfas.M).to("umol/cm^2")
 
     match sim.SPA_method:
         case c.SPAFlag.KINETIC:
@@ -311,29 +323,31 @@ def simulate(
     start_time = datetime.datetime.now()
     result, (args, kwargs) = function_call(
         analytical_soln,
-        t=sim.ts.to("s").m,
-        z=sim.zs.to("cm").m,
-        t0=sim.T0.to("s").m,
-        pfas_tot=F0.m,
-        Ci=Ci.m,
-        L=sim.L.to("cm").m,
-        v=v.m,
-        theta=theta.to("dimensionless").m,
-        rhob=sim.soil.rho_b.to("g/cm^3").m,
-        D=D.m,
-        Kd=Kd.to("cm^3/g").m,
-        alphas=alpha_s.to("1/s").m,
-        Fs=F_s.to("dimensionless").m,
-        R=R.to("dimensionless").m,
-        Raw=Raw.to("dimensionless").m,
-        Rs=Rs.to("dimensionless").m,
+        t=sim.ts.m_as("s"),
+        z=sim.zs.m_as("cm"),
+        t0=sim.T0.m_as("s"),
+        pfas_tot=pfas_total.m_as("umol/cm^2"),
+        Ci=Ci.m_as("umol/cm^3"),
+        L=sim.L.m_as("cm"),
+        v=v.m_as("cm/s"),
+        theta=theta.m_as("dimensionless"),
+        rhob=sim.soil.rho_b.m_as("g/cm^3"),
+        D=D.m_as("cm^2/s"),
+        Kd=Kd.m_as("cm^3/g"),
+        alphas=alpha_s.m_as("1/s"),
+        Fs=F_s.m_as("dimensionless"),
+        R=R_total.m_as("dimensionless"),
+        Raw=Raw.m_as("dimensionless"),
+        Rs=Rs.m_as("dimensionless"),
         spaflag=sim.SPA_method,  # type: ignore
         cflag=sim.C_method,  # type: ignore
     )
     end_time = datetime.datetime.now()
 
     if result is None:
-        (C_aq, C_s_mass, C_tot) = 3 * (np.array([np.nan], dtype=np.float64),)
+        (C_aq, C_s_mass, C_tot) = 3 * (
+            cast(npt.NDArray[np.float64], np.array([np.nan], dtype=np.float64)),  # type: ignore
+        )
     else:
         (C_aq, C_s_mass, C_tot) = result
 
@@ -359,11 +373,11 @@ def simulate(
         Raw=Raw,
         Kd=Kd,
         Rs=Rs,
-        R=R,
+        R=R_total,
         v=v,
         D=D,
         Ci=Ci,
-        F0=F0,
+        F0=pfas_total,
         C_aq=C_aq.to("umol/cm^3"),
         C_aq_bulk=C_aq_bulk.to("umol/cm^3"),
         C_aw=C_aw.to("umol/cm^3"),
