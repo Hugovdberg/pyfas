@@ -279,18 +279,18 @@ def simulate(
 
     match sim.Ci_method:
         case c.CiFlag.AQUEOUS:
-            Kaw, Aaw, Raw, Kd, Rs, R_total = _calculate_retardation(
+            Kaw, Aaw, Raw, Kd, Rs, R_total = calculate_retardation(
                 sim, theta, sim.C_rep
             )
         case c.CiFlag.BULK:
-            Kaw, Aaw, Raw, Kd, Rs, R_total = _calculate_retardation(
+            Kaw, Aaw, Raw, Kd, Rs, R_total = calculate_retardation(
                 sim, theta, u.Q_(1e-6, "mg/L")
             )
             if sim.C_rep > 0:
                 R_old = R_total
                 for _ in range(10):
                     C_rep = sim.C_rep / (R_total * theta)
-                    Kaw, Aaw, Raw, Kd, Rs, R_total = _calculate_retardation(
+                    Kaw, Aaw, Raw, Kd, Rs, R_total = calculate_retardation(
                         sim, theta, C_rep
                     )
                     if (R_total - R_old).m < 1e-3:
@@ -394,7 +394,7 @@ def simulate(
     )
 
 
-def _calculate_retardation(
+def calculate_retardation(
     sim: Simulation, theta: pint.Quantity[float], C_rep: pint.Quantity[float]
 ) -> Tuple[pint.Quantity[float], ...]:
     Kaw = K_aw(sim, C_rep)
