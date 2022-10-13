@@ -71,12 +71,12 @@ def effective_saturation(
     soil: "Soil", theta: pint.Quantity[float]
 ) -> pint.Quantity[float]:
     """Effective saturation of the soil (dimensionless)."""
-    return u.Q_((theta - soil.theta_r) / (soil.theta_s - soil.theta_r), "dimensionless")
+    return (theta - soil.theta_r) / (soil.theta_s - soil.theta_r)
 
 
 def saturation(soil: "Soil", theta: pint.Quantity[float]) -> pint.Quantity[float]:
     """Saturation of the soil (dimensionless)."""
-    return u.Q_(theta / soil.porosity, "dimensionless")
+    return theta / soil.porosity
 
 
 def tortuosity_MillingtonQuirk1961(
@@ -94,7 +94,7 @@ def tortuosity_MillingtonQuirk1961(
 
     Returns:
         Tortuosity of the soil (dimensionless)."""
-    return u.Q_((theta ** (7 / 3)) / (soil.theta_s**2), "dimensionless")
+    return (theta ** (7 / 3)) / (soil.theta_s**2)
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
