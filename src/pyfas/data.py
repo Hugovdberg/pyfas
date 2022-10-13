@@ -225,6 +225,182 @@ soils = {
             dispersivity=u.Q_(35.0, "cm")
         ),
     ),
+    "Staring-B01": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-B01",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.427),
+        theta_s=u.Q_(0.427),
+        theta_r=u.Q_(0.02),
+        K_sat=u.Q_(31.23, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0217, "1/cm"), n=u.Q_(1.735), l=u.Q_(0.981)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(5.0, "percent"),
+        f_oc=u.Q_(7.5, "percent"),
+    ),
+    "Staring-O01": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O01",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.366),
+        theta_s=u.Q_(0.366),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(22.32, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0160, "1/cm"), n=u.Q_(2.163), l=u.Q_(2.868)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(5.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O02": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O02",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.387),
+        theta_s=u.Q_(0.387),
+        theta_r=u.Q_(0.02),
+        K_sat=u.Q_(22.76, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0161, "1/cm"), n=u.Q_(1.524), l=u.Q_(2.440)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(14.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O03": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O03",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.340),
+        theta_s=u.Q_(0.340),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(12.37, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0172, "1/cm"), n=u.Q_(1.703), l=u.Q_(0.0)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(25.5, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O04": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O04",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.364),
+        theta_s=u.Q_(0.364),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(25.81, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0136, "1/cm"), n=u.Q_(1.488), l=u.Q_(2.179)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(41.5, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O05": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O05",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.337),
+        theta_s=u.Q_(0.337),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(17.42, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0303, "1/cm"), n=u.Q_(2.888), l=u.Q_(0.074)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(0.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O06": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O06",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.333),
+        theta_s=u.Q_(0.333),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(32.83, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0160, "1/cm"), n=u.Q_(1.289), l=u.Q_(-1.010)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(25.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O07": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O07",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.513),
+        theta_s=u.Q_(0.513),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(37.55, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0120, "1/cm"), n=u.Q_(1.153), l=u.Q_(-2.013)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(0.0, "percent"),
+        f_silt=u.Q_(41.5, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O08": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O08",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.454),
+        theta_s=u.Q_(0.454),
+        theta_r=u.Q_(0.0),
+        K_sat=u.Q_(8.64, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0113, "1/cm"), n=u.Q_(1.346), l=u.Q_(-0.904)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(10.0, "percent"),
+        f_silt=u.Q_(0.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O09": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O09",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.458),
+        theta_s=u.Q_(0.458),
+        theta_r=u.Q_(0.0),
+        K_sat=u.Q_(3.77, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0097, "1/cm"), n=u.Q_(1.376), l=u.Q_(-1.013)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(15.0, "percent"),
+        f_silt=u.Q_(0.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
+    "Staring-O10": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
+        name="Staring-O10",
+        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
+        porosity=u.Q_(0.472),
+        theta_s=u.Q_(0.472),
+        theta_r=u.Q_(0.01),
+        K_sat=u.Q_(2.30, "cm/day"),
+        van_genuchten=soil.VanGenuchtenParameters(
+            alpha=u.Q_(0.0100, "1/cm"), n=u.Q_(1.246), l=u.Q_(-0.793)
+        ),
+        tracer_fit=None,
+        soil_roughness_multiplier=u.Q_(4.15),
+        f_clay=u.Q_(21.5, "percent"),
+        f_silt=u.Q_(0.0, "percent"),
+        f_oc=u.Q_(1.5, "percent"),
+    ),
 }
 
 spa_matrix: Dict[soil.Soil, Dict[pfas.PFAS, spa_.SPAParameters]] = {
