@@ -116,8 +116,8 @@ PFASs = {
         n_CF2=u.Q_(8),
     ),
 }
-soils = {  # According to Guo et al. (2020), Table 1
-    "Accusand": soil.Soil(
+soils = {
+    "Accusand": soil.Soil(  # According to Guo et al. (2020), Table 1
         name="Accusand",
         rho_b=u.Q_(1.65, "g/cm**3"),
         porosity=u.Q_(0.294),
@@ -140,7 +140,7 @@ soils = {  # According to Guo et al. (2020), Table 1
         f_clay=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
         f_silt=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
     ),
-    "Vinton soil": soil.Soil(
+    "Vinton soil": soil.Soil(  # According to Guo et al. (2020), Table 1
         name="Vinton soil",
         rho_b=u.Q_(1.627, "g/cm**3"),
         porosity=u.Q_(0.395),
@@ -161,7 +161,7 @@ soils = {  # According to Guo et al. (2020), Table 1
         f_clay=u.Q_(4.7, "percent"),  # According to Guo et al. (2020), Section 4
         f_silt=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
     ),
-    "Schoonenburgse Heuvel - sand": soil.Soil(
+    "Schoonenburgse Heuvel - sand": soil.Soil(  # According to De Jong (unpublished), Appendix A
         name="Schoonenburgse Heuvel - sand",
         rho_b=u.Q_(1.5, "g/cm**3"),
         porosity=u.Q_(0.427),
@@ -177,7 +177,7 @@ soils = {  # According to Guo et al. (2020), Table 1
             dispersivity=u.Q_(5.0, "cm")
         ),
     ),
-    "Schoonenburgse Heuvel - peat": soil.Soil(
+    "Schoonenburgse Heuvel - peat": soil.Soil(  # According to De Jong (unpublished), Appendix A
         name="Schoonenburgse Heuvel - peat",
         rho_b=u.Q_(0.23, "g/cm**3"),
         porosity=u.Q_(0.85),
@@ -193,7 +193,7 @@ soils = {  # According to Guo et al. (2020), Table 1
             dispersivity=u.Q_(10.0, "cm")
         ),
     ),
-    "Silva et al. (2020) - loam": soil.Soil(
+    "Silva et al. (2020) - loam": soil.Soil(  # According to De Jong (unpublished), Appendix A
         name="Silva et al. (2020) - loam",
         rho_b=u.Q_(1.33, "g/cm**3"),
         porosity=u.Q_(0.47),
@@ -209,7 +209,7 @@ soils = {  # According to Guo et al. (2020), Table 1
             dispersivity=u.Q_(35.0, "cm")
         ),
     ),
-    "Silva et al. (2020) - Loamy sand": soil.Soil(
+    "Silva et al. (2020) - Loamy sand": soil.Soil(  # According to De Jong (unpublished), Appendix A
         name="Silva et al. (2020) - Loamy sand",
         rho_b=u.Q_(1.65, "g/cm**3"),
         porosity=u.Q_(0.44),
