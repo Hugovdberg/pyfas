@@ -1,6 +1,16 @@
 import dataclasses
 import datetime
-from typing import Any, Callable, Dict, Optional, ParamSpec, Tuple, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Optional,
+    ParamSpec,
+    Sequence,
+    Tuple,
+    TypeVar,
+    cast,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -175,7 +185,6 @@ def volumetric_water_content(
     sim: Simulation,
 ) -> pint.Quantity[float]:
     """Volumetric water content of the soil (dimensionless)."""
-    import scipy.optimize as opt
     import warnings
 
     # Under the assumption that dh/dz = 1, q = K_r
@@ -184,11 +193,29 @@ def volumetric_water_content(
     def rel_perm_error(theta: float) -> float:
         return (s.relative_permeability(sim.soil, u.Q_(theta)) - K_r).m
 
-    initial_theta = (sim.soil.theta_s.m + sim.soil.theta_r.m) / 2
+    # initial_theta = (sim.soil.theta_s.m + sim.soil.theta_r.m) / 2
+    # initial_theta = sim.soil.theta_s.m
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        theta: float = opt.fsolve(rel_perm_error, initial_theta)[0]
+        try:
+            # print(f"initial_theta = {initial_theta}")
+            theta: float = root_scalar(
+                rel_perm_error,
+                bracket=[sim.soil.theta_r.m + 1e-9, sim.soil.theta_s.m],
+                method="brentq",
+            )
+        except RuntimeWarning as e:
+            raise ValueError("Could not find a solution for the water content") from e
     return u.Q_(theta, "dimensionless")
+
+
+def root_scalar(
+    f: Callable[[float], float], bracket: Sequence[float], *args: Any, **kwargs: Any
+) -> float:
+    """Wrapper for scipy.optimize.root_scalar."""
+    import scipy.optimize as opt
+
+    return opt.root_scalar(f, bracket, *args, **kwargs).root  # type: ignore
 
 
 def K_aw(sim: Simulation, C_rep: pint.Quantity[float]) -> pint.Quantity[float]:
