@@ -217,11 +217,11 @@ soils = {  # According to Guo et al. (2020), Table 1
     ),
 }
 
-spa_matrix: Dict[
-    soil.Soil, Dict[pfas.PFAS, spa_.SPAParameters]
-] = {  # According to Guo et al. (2022), Table 1
+spa_matrix: Dict[soil.Soil, Dict[pfas.PFAS, spa_.SPAParameters]] = {
     soils["Accusand"]: {
-        PFASs["PFPeA"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFPeA"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFPeA"],
             soil=soils["Accusand"],
             Freundlich_K=u.Q_(0.0211, "(mg/kg)/(mg/L)**0.87"),
@@ -229,7 +229,9 @@ spa_matrix: Dict[
             frac_instant_adsorption=u.Q_(0.4),
             kinetic_adsorption_rate=u.Q_(5.9, "1/h"),
         ),
-        PFASs["PFHxS"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFHxS"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFHxS"],
             soil=soils["Accusand"],
             Freundlich_K=u.Q_(0.0213, "(mg/kg)/(mg/L)**0.81"),
@@ -237,7 +239,9 @@ spa_matrix: Dict[
             frac_instant_adsorption=u.Q_(0.1),
             kinetic_adsorption_rate=u.Q_(3.1, "1/h"),
         ),
-        PFASs["PFOA"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFOA"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFOA"],
             soil=soils["Accusand"],
             Freundlich_K=u.Q_(0.1, "mg/kg/(mg/L)**0.87"),
@@ -245,7 +249,9 @@ spa_matrix: Dict[
             frac_instant_adsorption=u.Q_(0.4),
             kinetic_adsorption_rate=u.Q_(5.9, "1/h"),
         ),
-        PFASs["PFOS"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFOS"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFOS"],
             soil=soils["Accusand"],
             Freundlich_K=u.Q_(0.15, "mg/kg/(mg/L)**0.81"),
@@ -255,7 +261,9 @@ spa_matrix: Dict[
         ),
     },
     soils["Vinton soil"]: {
-        PFASs["PFPeA"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFPeA"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFPeA"],
             soil=soils["Vinton soil"],
             Freundlich_K=u.Q_(0.122, "(mg/kg)/(mg/L)**0.87"),
@@ -263,7 +271,9 @@ spa_matrix: Dict[
             frac_instant_adsorption=u.Q_(0.16),
             kinetic_adsorption_rate=u.Q_(0.9, "1/h"),
         ),
-        PFASs["PFHxS"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFHxS"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFHxS"],
             soil=soils["Vinton soil"],
             Freundlich_K=u.Q_(0.156, "(mg/kg)/(mg/L)**0.77"),
@@ -271,7 +281,9 @@ spa_matrix: Dict[
             frac_instant_adsorption=u.Q_(0.16),
             kinetic_adsorption_rate=u.Q_(0.9, "1/h"),
         ),
-        PFASs["PFOA"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFOA"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFOA"],
             soil=soils["Vinton soil"],
             Freundlich_K=u.Q_(0.58, "(mg/kg)/(mg/L)**0.87"),
@@ -279,7 +291,9 @@ spa_matrix: Dict[
             frac_instant_adsorption=u.Q_(0.16),
             kinetic_adsorption_rate=u.Q_(0.9, "1/h"),
         ),
-        PFASs["PFOS"]: spa_.KineticFreundlichSorption(
+        PFASs[
+            "PFOS"
+        ]: spa_.KineticFreundlichSorption(  # According to Guo et al. (2022), Table 1
             pfas=PFASs["PFOS"],
             soil=soils["Vinton soil"],
             Freundlich_K=u.Q_(1.11, "(mg/kg)/(mg/L)**0.77"),
@@ -289,15 +303,19 @@ spa_matrix: Dict[
         ),
     },
     soils["Schoonenburgse Heuvel - sand"]: {
-        PFASs["PFOA"]: spa_.LinearSorption(
+        PFASs[
+            "PFOA"
+        ]: spa_.LinearSorption(  # According to de Jong, 2022, source unknown
             pfas=PFASs["PFOA"],
             soil=soils["Schoonenburgse Heuvel - sand"],
-            Kd_=u.Q_(1.083, "cm^3/g"),  # According to de Jong, 2022, source unknown
+            Kd_=u.Q_(1.083, "cm^3/g"),
         ),
-        PFASs["PFOS"]: spa_.LinearSorption(
+        PFASs[
+            "PFOS"
+        ]: spa_.LinearSorption(  # According to de Jong, 2022, source unknown
             pfas=PFASs["PFOS"],
             soil=soils["Schoonenburgse Heuvel - sand"],
-            Kd_=u.Q_(2.067, "cm^3/g"),  # According to de Jong, 2022, source unknown
+            Kd_=u.Q_(2.067, "cm^3/g"),
         ),
     },
 }
