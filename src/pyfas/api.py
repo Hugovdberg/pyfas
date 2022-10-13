@@ -6,7 +6,16 @@ from .data import PFASRegistry
 from .pfas import PFAS
 from .simulation import Simulation, SimulationResult, simulate
 from .soil import Soil, TracerFitParameters, VanGenuchtenParameters
-from .solid_phase_adsorption import SPAParameters
+from .solid_phase_adsorption import (
+    FabregatPalauSorption,
+    FreundlichSorption,
+    KineticFabregatPalauSorption,
+    KineticFreundlichSorption,
+    KineticLinearSorption,
+    KineticSorption,
+    LinearSorption,
+    SPAParameters,
+)
 from .units import Q_, Quantity, units
 
 __all__ = [
@@ -23,6 +32,13 @@ __all__ = [
     "TracerFitParameters",
     "VanGenuchtenParameters",
     "SPAParameters",
+    "KineticSorption",
+    "FabregatPalauSorption",
+    "KineticFabregatPalauSorption",
+    "FreundlichSorption",
+    "KineticFreundlichSorption",
+    "LinearSorption",
+    "KineticLinearSorption",
     "Simulation",
     "SimulationResult",
     "simulate",
