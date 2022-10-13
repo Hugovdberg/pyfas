@@ -133,6 +133,12 @@ soils = {  # According to Guo et al. (2020), Table 1
             x2=u.Q_(548.54, "cm**2/cm**3"),
         ),
         soil_roughness_multiplier=u.Q_(4.15),
+        f_oc=u.Q_(0.04, "percent"),  # According to Guo et al. (2020), Section 4
+        f_mo=u.Q_(14.0, "ug/g")  # FeOx
+        + u.Q_(2.5, "ug/g")  # MnOx
+        + u.Q_(12.0, "ug/g"),  # AlOx; According to Guo et al. (2020), Section 4
+        f_clay=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
+        f_silt=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
     ),
     "Vinton soil": soil.Soil(
         name="Vinton soil",
@@ -150,6 +156,10 @@ soils = {  # According to Guo et al. (2020), Table 1
             x2=u.Q_(1305.0, "cm**2/cm**3"),
         ),
         soil_roughness_multiplier=u.Q_(4.15),
+        f_oc=u.Q_(0.1, "percent"),  # According to Guo et al. (2020), Section 4
+        f_mo=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
+        f_clay=u.Q_(4.7, "percent"),  # According to Guo et al. (2020), Section 4
+        f_silt=u.Q_(0.0, "percent"),  # According to Guo et al. (2020), Section 4
     ),
     "Schoonenburgse Heuvel - sand": soil.Soil(
         name="Schoonenburgse Heuvel - sand",
