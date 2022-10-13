@@ -189,7 +189,7 @@ class Soil:
     def __post_init__(self) -> None:
         if not (0 < self.porosity < 1):
             raise ValueError("Porosity must be between 0 and 1.")
-        if not (0 < self.theta_r <= self.porosity):
+        if not (0 <= self.theta_r <= self.porosity):
             raise ValueError(
                 f"Residual water content must be between 0 and porosity ({self.porosity})."
             )
