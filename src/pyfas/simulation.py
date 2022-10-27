@@ -75,6 +75,7 @@ class Simulation:
     pfas: p.PFAS
     soil: s.Soil
     spa: spa_.SPAParameters
+
     name: str = dataclasses.field(compare=True)
     """Name of the simulation."""
 
@@ -221,9 +222,9 @@ def root_scalar(
     f: Callable[[float], float], bracket: Sequence[float], *args: Any, **kwargs: Any
 ) -> float:
     """Wrapper for scipy.optimize.root_scalar."""
-    import scipy.optimize as opt
+    import scipy.optimize as opt # type: ignore
 
-    return opt.root_scalar(f, bracket, *args, **kwargs).root  # type: ignore
+    return opt.root_scalar(f, *args, bracket=bracket, **kwargs).root  # type: ignore
 
 
 def K_aw(sim: Simulation, C_rep: pint.Quantity[float]) -> pint.Quantity[float]:
@@ -266,7 +267,7 @@ def simulate(
     sim: Simulation,
 ) -> SimulationResult:
     """Simulate PFAS transport in soil."""
-    from pfas_leach_screening.analytical_soln import analytical_soln
+    from pfas_leach_screening.analytical_soln import analytical_soln # type: ignore
 
     theta = volumetric_water_content(sim)
     v = sim.q / theta
