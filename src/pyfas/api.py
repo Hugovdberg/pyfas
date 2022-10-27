@@ -15,6 +15,9 @@ from .solid_phase_adsorption import (
     KineticSorption,
     LinearSorption,
     SPAParameters,
+    K_oc_FabregatPalau2021,
+    K_sc_FabregatPalau2021,
+    Kd_FabregatPalau,
 )
 from .units import Q_, Quantity, units
 
@@ -39,6 +42,9 @@ __all__ = [
     "KineticFreundlichSorption",
     "LinearSorption",
     "KineticLinearSorption",
+    "K_oc_FabregatPalau2021",
+    "K_sc_FabregatPalau2021",
+    "Kd_FabregatPalau",
     "Simulation",
     "SimulationResult",
     "simulate",
