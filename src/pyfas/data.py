@@ -1,5 +1,6 @@
 from typing import Dict
 
+from . import air_water_adsorption as awa_
 from . import pfas
 from . import registry as r
 from . import soil
@@ -7,113 +8,114 @@ from . import solid_phase_adsorption as spa_
 from . import units as u
 
 PFASs = {
-    "PFPeA": pfas.PFAS(
-        name="PFPeA",
-        M=u.Q_(264.05, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(3168.6, "mg/L")
-        / u.Q_(264.05, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.22),  # According to Guo et al. (2022), Table 2
-        diffusion=u.Q_(12e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(15, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_sc=u.Q_(0.46, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_mo=None,
-        n_CF2=u.Q_(4),
-    ),
-    "PFHxA": pfas.PFAS(
-        name="PFHxA",
-        M=u.Q_(314.05, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(1350.42, "mg/L")
-        / u.Q_(314.05, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.21),  # According to Guo et al. (2022), Table 2
-        diffusion=u.Q_(7.8e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(15, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_sc=u.Q_(0.46, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_mo=None,
-        n_CF2=u.Q_(5),
-    ),
-    "PFHpA": pfas.PFAS(
-        name="PFHpA",
-        M=u.Q_(364.06, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(345.86, "mg/L")
-        / u.Q_(364.06, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.22),  # According to Guo et al. (2022), Table 2
-        diffusion=u.Q_(9.3e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(50, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_sc=None,
-        K_mo=None,
-        n_CF2=u.Q_(6),
-    ),
-    "PFOA": pfas.PFAS(
-        name="PFOA",
-        M=u.Q_(414.07, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(62.11, "mg/L")
-        / u.Q_(414.07, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.19),  # According to Guo et al. (2022), Table 2
-        diffusion=u.Q_(4.9e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(107, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_sc=u.Q_(3.3, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_mo=None,
-        n_CF2=u.Q_(7),
-    ),
-    "PFNA": pfas.PFAS(
-        name="PFNA",
-        M=u.Q_(464.08, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(5.11, "mg/L")
-        / u.Q_(464.08, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.16),  # According to Guo et al. (2022), Table 2
-        diffusion=u.Q_(2.93e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(324, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_sc=u.Q_(2.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_mo=None,
-        n_CF2=u.Q_(8),
-    ),
-    "PFDA": pfas.PFAS(
-        name="PFDA",
-        M=u.Q_(514.08, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(3.7, "mg/L")
-        / u.Q_(514.08, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.17),  # According to Guo et al. (2022), Table 2
-        diffusion=u.Q_(2.27e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(604.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_sc=u.Q_(14.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
-        K_mo=None,
-        n_CF2=u.Q_(9),
+    "PFBA": pfas.PFAS(
+        name="PFBA",
+        M=u.Q_(214.0, "g/mol"),
+        diffusion=pfas.estimate_diffusion_coefficient(3),
+        K_oc=u.Q_(2.9, "L/kg"),
+        K_sc=u.Q_(0.43, "L/kg"),
+        n_CFx=u.Q_(3),
+        n_COO=u.Q_(1),
     ),
     "PFBS": pfas.PFAS(
         name="PFBS",
         M=u.Q_(300.1, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(2400.8, "mg/L")
-        / u.Q_(300.1, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.15),  # According to Guo et al. (2022), Table 2
         diffusion=u.Q_(11e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(11.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
         K_sc=u.Q_(0.44, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
         K_mo=None,
-        n_CF2=u.Q_(4),
+        n_CFx=u.Q_(4),
+        n_SO3=u.Q_(1),
+    ),
+    "PFPeA": pfas.PFAS(
+        name="PFPeA",
+        M=u.Q_(264.05, "g/mol"),  # According to Guo et al. (2022), Table 2
+        diffusion=u.Q_(12e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
+        K_oc=u.Q_(15.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_sc=u.Q_(0.46, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_mo=None,
+        n_CFx=u.Q_(4),
+        n_COO=u.Q_(1),
+    ),
+    "PFHxA": pfas.PFAS(
+        name="PFHxA",
+        M=u.Q_(314.05, "g/mol"),  # According to Guo et al. (2022), Table 2
+        diffusion=u.Q_(7.8e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
+        K_oc=u.Q_(15.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_sc=u.Q_(0.46, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_mo=None,
+        n_CFx=u.Q_(5),
+        n_COO=u.Q_(1),
     ),
     "PFHxS": pfas.PFAS(
         name="PFHxS",
         M=u.Q_(400.12, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(160.05, "mg/L")
-        / u.Q_(400.12, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.14),  # According to Guo et al. (2022), Table 2
         diffusion=u.Q_(4.5e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(50, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_oc=u.Q_(50.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
         K_sc=u.Q_(1.2, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
         K_mo=None,
-        n_CF2=u.Q_(6),
+        n_CFx=u.Q_(6),
+        n_SO3=u.Q_(1),
+    ),
+    "PFHpA": pfas.PFAS(
+        name="PFHpA",
+        M=u.Q_(364.06, "g/mol"),  # According to Guo et al. (2022), Table 2
+        diffusion=u.Q_(9.3e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
+        K_oc=u.Q_(50.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_sc=None,
+        K_mo=None,
+        n_CFx=u.Q_(6),
+        n_COO=u.Q_(1),
+    ),
+    "PFOA": pfas.PFAS(
+        name="PFOA",
+        M=u.Q_(414.07, "g/mol"),  # According to Guo et al. (2022), Table 2
+        diffusion=u.Q_(4.9e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
+        K_oc=u.Q_(107.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_sc=u.Q_(3.3, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_mo=None,
+        n_CFx=u.Q_(7),
+        n_COO=u.Q_(1),
     ),
     "PFOS": pfas.PFAS(
         name="PFOS",
         M=u.Q_(500.13, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_a=u.Q_(3.65, "mg/L")
-        / u.Q_(500.13, "g/mol"),  # According to Guo et al. (2022), Table 2
-        Szyszkowski_b=u.Q_(0.12),  # According to Guo et al. (2022), Table 2
         diffusion=u.Q_(5.4e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
-        K_oc=u.Q_(609, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_oc=u.Q_(609.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
         K_sc=u.Q_(9.4, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
         K_mo=None,
-        n_CF2=u.Q_(8),
+        n_CFx=u.Q_(8),
+        n_SO3=u.Q_(1),
+    ),
+    "PFNA": pfas.PFAS(
+        name="PFNA",
+        M=u.Q_(464.08, "g/mol"),  # According to Guo et al. (2022), Table 2
+        diffusion=u.Q_(2.93e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
+        K_oc=u.Q_(324.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_sc=u.Q_(2.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_mo=None,
+        n_CFx=u.Q_(8),
+        n_COO=u.Q_(1),
+    ),
+    "PFDA": pfas.PFAS(
+        name="PFDA",
+        M=u.Q_(514.08, "g/mol"),  # According to Guo et al. (2022), Table 2
+        diffusion=u.Q_(2.27e-6, "cm**2/s"),  # According to Guo et al. (2022), Table 2
+        K_oc=u.Q_(604.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_sc=u.Q_(14.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
+        K_mo=None,
+        n_CFx=u.Q_(9),
+        n_COO=u.Q_(1),
+    ),
+    "HFPO-DA": pfas.PFAS(
+        name="HFPO-DA",
+        M=u.Q_(
+            330.05, "g/mol"
+        ),  # According to https://pubchem.ncbi.nlm.nih.gov/compound/114481
+        diffusion=pfas.estimate_diffusion_coefficient(5),
+        n_CFx=u.Q_(5),
+        n_COO=u.Q_(1),
+        n__O_=u.Q_(1),
     ),
 }
 soils = {
@@ -413,7 +415,7 @@ soils = {
         ),
         tracer_fit=None,
         soil_roughness_multiplier=u.Q_(4.15),
-        f_clay=u.Q_(30, "percent"),
+        f_clay=u.Q_(30.0, "percent"),
         f_silt=u.Q_(0.0, "percent"),
         f_oc=u.Q_(1.5, "percent"),
     ),
@@ -451,11 +453,15 @@ soils = {
     ),
     "Staring-O14": soil.Soil(  # According to Heinen et al. (2020), Tables 2 and 3
         name="Staring-O14",
-        rho_b=u.Q_(1.5, "g/cm**3"),  # Unknown
-        porosity=u.Q_(0.394),
-        theta_s=u.Q_(0.394),
-        theta_r=u.Q_(0.01),
-        K_sat=u.Q_(2.50, "cm/day"),
+        rho_b=soil.bulk_density_Poelman1974(
+            f_clay=soil.FractionClay(u.Q_(0.0, "percent")),
+            f_oc=soil.FractionOrganicCarbon(u.Q_(1.5, "percent")),
+            porosity=soil.Porosity(u.Q_(0.394)),
+        ),
+        porosity=soil.Porosity(u.Q_(0.394)),
+        theta_s=soil.SaturatedWaterContent(u.Q_(0.394)),
+        theta_r=soil.ResidualWaterContent(u.Q_(0.01)),
+        K_sat=soil.SaturatedHydraulicConductivity(u.Q_(2.50, "cm/day")),
         van_genuchten=soil.VanGenuchtenParameters(
             alpha=u.Q_(0.0033, "1/cm"), n=u.Q_(1.617), l=u.Q_(-0.514)
         ),
@@ -633,9 +639,60 @@ spa_matrix: Dict[soil.Soil, Dict[pfas.PFAS, spa_.SPAParameters]] = {
         ),
     },
 }
+awa_matrix: Dict[pfas.PFAS, awa_.AWAParameters] = {
+    PFASs["PFPeA"]: awa_.SzyszkowskiSorption(
+        a=(u.Q_(3168.6, "mg/L") / u.Q_(264.05, "g/mol")).to(
+            "µmol/L"
+        ),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.22),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFHxA"]: awa_.SzyszkowskiSorption(
+        a=(u.Q_(1350.42, "mg/L") / u.Q_(314.05, "g/mol")).to(
+            "µmol/L"
+        ),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.21),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFHpA"]: awa_.SzyszkowskiSorption(
+        a=(u.Q_(345.86, "mg/L") / u.Q_(364.06, "g/mol")).to(
+            "µmol/L"
+        ),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.22),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFOA"]: awa_.SzyszkowskiSorption(
+        a=u.Q_(62.11, "mg/L")
+        / u.Q_(414.07, "g/mol"),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.19),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFNA"]: awa_.SzyszkowskiSorption(
+        a=u.Q_(5.11, "mg/L")
+        / u.Q_(464.08, "g/mol"),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.16),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFDA"]: awa_.SzyszkowskiSorption(
+        a=u.Q_(3.7, "mg/L")
+        / u.Q_(514.08, "g/mol"),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.17),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFBS"]: awa_.SzyszkowskiSorption(
+        a=u.Q_(2400.8, "mg/L")
+        / u.Q_(300.1, "g/mol"),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.15),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFHxS"]: awa_.SzyszkowskiSorption(
+        a=u.Q_(160.05, "mg/L")
+        / u.Q_(400.12, "g/mol"),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.14),  # According to Guo et al. (2022), Table 2
+    ),
+    PFASs["PFOS"]: awa_.SzyszkowskiSorption(
+        a=u.Q_(3.65, "mg/L")
+        / u.Q_(500.13, "g/mol"),  # According to Guo et al. (2022), Table 2
+        b=u.Q_(0.12),  # According to Guo et al. (2022), Table 2
+    ),
+}
 
 PFASRegistry = r.PFASRegistry(
     pfas=PFASs,
     soil=soils,
     spa=spa_matrix,
+    awa=awa_matrix,
 )
