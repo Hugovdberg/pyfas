@@ -4,8 +4,8 @@ import enum
 class AawFlag(enum.Flag):
     """Flag for the type of air-water interfacial area."""
 
-    THERMODYNAMIC = "thermodynamic-based"
-    TRACER = "tracer-based"
+    THERMODYNAMIC = 0
+    TRACER = 1
 
 
 class SPAFlag(enum.IntFlag):
