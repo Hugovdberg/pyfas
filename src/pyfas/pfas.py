@@ -2,6 +2,7 @@ import dataclasses
 from typing import Optional
 
 from . import units as u
+from . import _typing as t
 
 Q_ = u.Quantity
 
@@ -21,7 +22,7 @@ class PFAS:
     # Szyszkowski_b: u.QType[float] = dataclasses.field(compare=False)
     # """Szyszkowski parameter b (dimensionless)."""
 
-    diffusion: Q_[float] = dataclasses.field(compare=False)
+    diffusion: t.Diffusivity = dataclasses.field(compare=False)
     """Diffusion coefficient (D0) in cm^2/s."""
 
     K_oc: Optional[Q_[float]] = dataclasses.field(compare=False, default=None)
@@ -55,7 +56,7 @@ class PFAS:
     """Number of N(CH3)2-CH2-COO- groups in PFAS (dimensionless)."""
 
 
-def estimate_diffusion_coefficient(n_CFx: int) -> Q_[float]:
+def estimate_diffusion_coefficient(n_CFx: int) -> t.Diffusivity:
     """Estimate the diffusion coefficient of a PFAS.
 
     Based on a linear regression of the diffusion coefficient of 10 PFAS against
@@ -71,4 +72,4 @@ def estimate_diffusion_coefficient(n_CFx: int) -> Q_[float]:
     u.QType[float]
         Estimated diffusion coefficient in cm^2/s.
     """
-    return Q_(10 ** (-4.5360 + -0.1088 * n_CFx), "cm^2/s")
+    return t.Diffusivity(10 ** (-4.5360 + -0.1088 * n_CFx), "cm^2/s")

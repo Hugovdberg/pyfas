@@ -42,10 +42,32 @@ ureg.define(_percentage_unit)  # type: ignore
 class Quantity(cast(Type[QType], ureg.Quantity), Generic[a]):  # type: ignore
     """Pint Quantity with some additional methods."""
 
-    def __new__(
-        cls, value: a | Quantity[a], units: UType | str | None = None
-    ) -> Quantity[a]:
-        return super().__new__(cls, value, units)  # type: ignore
+    _base_units: UType | str | None = None
+
+    def __new__(cls, value: a | Quantity[a], units: UType | str | None = None) -> Self:
+        if isinstance(value, Quantity):
+            if units is not None:
+                retval = value.to(units)
+            else:
+                retval = value
+        else:
+            retval = super().__new__(cls, value, units)  # type: ignore
+        if cls._base_units is not None:
+            if not retval.check(cls._base_units):  # type: ignore
+                units_ = ureg.Unit(cls._base_units)  # type: ignore
+                raise pint.DimensionalityError(retval.units, units_)  # type: ignore
+        return retval  # type: ignore
+
+    @property
+    def q(self) -> Quantity[a]:
+        return Quantity(self.magnitude, self.units)
+
+    @property
+    def units(self) -> UType:
+        return super().units  # type: ignore
+
+    def __getitem__(self, key: Any) -> Self:
+        return super().__getitem__(key)  # type: ignore
 
     def to(
         self,

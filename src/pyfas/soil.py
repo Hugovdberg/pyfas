@@ -2,38 +2,15 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Callable, Generator, NewType, Optional
+from typing import Any, Callable, Generator, Optional, Sequence
 
 import numpy as np
 import scipy.stats as sst
 
 from . import units as u
+from ._typing import *
 
 Q_ = u.Quantity
-
-Porosity = NewType("Porosity", Q_[float])
-
-WaterContent = NewType("WaterContent", Q_[float])
-SaturatedWaterContent = NewType("SaturatedWaterContent", Q_[float])
-ResidualWaterContent = NewType("ResidualWaterContent", Q_[float])
-
-HydraulicConductivity = NewType("HydraulicConductivity", Q_[float])
-SaturatedHydraulicConductivity = NewType("SaturatedHydraulicConductivity", Q_[float])
-
-Saturation = NewType("Saturation", Q_[float])
-EffectiveSaturation = NewType("EffectiveSaturation", Q_[float])
-
-CharacteristicLength = NewType("CharacteristicLength", Q_[float])
-Dispersivity = NewType("Dispersivity", Q_[float])
-Tortuosity = NewType("Tortuosity", Q_[float])
-
-FractionClay = NewType("FractionClay", Q_[float])
-FractionOrganicCarbon = NewType("FractionOrganicCarbon", Q_[float])
-FractionSilt = NewType("FractionSilt", Q_[float])
-FractionSand = NewType("FractionSand", Q_[float])
-FractionMetalOxides = NewType("FractionMetalOxides", Q_[float])
-
-BulkDensity = NewType("BulkDensity", Q_[float])
 
 DispersivityFunction = Callable[["Soil", CharacteristicLength], Dispersivity]
 
@@ -96,6 +73,45 @@ def relative_permeability(soil: Soil, theta: WaterContent) -> HydraulicConductiv
     )
 
 
+def _root_scalar(
+    f: Callable[[float], float], bracket: Sequence[float], *args: Any, **kwargs: Any
+) -> float:
+    """Wrapper for scipy.optimize.root_scalar."""
+    import scipy.optimize as opt  # type: ignore
+
+    return opt.root_scalar(f, *args, bracket=bracket, **kwargs).root  # type: ignore
+
+
+def volumetric_water_content(soil: Soil, q: Discharge) -> WaterContent:
+    """Volumetric water content of the soil (dimensionless)."""
+    import warnings
+
+    if q > soil.K_sat:
+        raise ValueError(
+            "Groundwater recharge is too high for the soil under the unit gradient assumption"
+        )
+
+    # Under the assumption that dh/dz = 1, q = K_r
+    K_r = q
+
+    def rel_perm_error(theta: float) -> float:
+        return (relative_permeability(soil, WaterContent(theta)) - K_r).m
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        try:
+            # print(f"initial_theta = {initial_theta}")
+            theta: float = _root_scalar(
+                rel_perm_error,
+                bracket=[soil.theta_r.m + 1e-9, soil.theta_s.m],
+                method="brentq",
+            )
+        except RuntimeWarning as e:
+            raise ValueError("Could not find a solution for the water content") from e
+
+    return WaterContent(u.Q_(theta, "dimensionless"))
+
+
 def effective_saturation(soil: Soil, theta: WaterContent) -> EffectiveSaturation:
     """Effective saturation of the soil (dimensionless)."""
     return EffectiveSaturation((theta - soil.theta_r) / (soil.theta_s - soil.theta_r))
@@ -124,12 +140,9 @@ def bulk_density_Poelman1974(
     Returns:
         Bulk density of the soil (dimensions [mass] / [volume])."""
     return BulkDensity(
-        (1 - porosity)
-        * (
-            f_oc * Q_(1.47, "g/cm^3")
-            + f_clay * Q_(2.88, "g/cm^3")
-            + (1 - f_oc - f_clay) * Q_(2.66, "g/cm^3")
-        )
+        (1 - porosity).m_as("")
+        * (f_oc * 1.47 + f_clay * 2.88 + (1 - f_oc - f_clay) * 2.66).m_as(""),
+        "g/cm^3",
     )
 
 
@@ -281,3 +294,118 @@ class Soil:
                 "Sum of fractions of organic carbon, metal oxides, sand, clay, and silt must be less than or equal to 1."
             )
 
+
+def _theta_r(_: Porosity) -> ResidualWaterContent:
+    return ResidualWaterContent(Q_(0.0))
+
+
+def _theta_s(porosity: Porosity) -> SaturatedWaterContent:
+    return SaturatedWaterContent(porosity)
+
+
+@dataclasses.dataclass(frozen=True, eq=True)
+class SoilClass:
+    """Soil class with a name and a set of soils."""
+
+    name: str = dataclasses.field(compare=True)
+    """Name of the soil class."""
+
+    f_clay: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+    f_oc: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+    f_sand: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+    f_silt: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+    f_mo: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+
+    porosity: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+    K_sat: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+
+    van_genuchten_alpha: sst.rv_continuous = dataclasses.field(
+        compare=False, repr=False
+    )
+    van_genuchten_n: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+    van_genuchten_l: sst.rv_continuous = dataclasses.field(compare=False, repr=False)
+
+    theta_r: Callable[[Porosity], ResidualWaterContent] = dataclasses.field(
+        compare=False, repr=False, default=_theta_r
+    )
+    theta_s: Callable[[Porosity], SaturatedWaterContent] = dataclasses.field(
+        compare=False, repr=False, default=_theta_s
+    )
+
+    rho_b: Callable[
+        [FractionClay, FractionOrganicCarbon, Porosity], BulkDensity
+    ] = dataclasses.field(compare=False, repr=False, default=bulk_density_Poelman1974)
+    """Function for calculating the bulk density of the soil."""
+
+    def mean(self) -> Soil:
+        """Mean soil in the soil class."""
+        porosity = Porosity(Q_(self.porosity.mean(), "dimensionless"))  # type: ignore
+        f_c = FractionClay(Q_(self.f_clay.mean(), "dimensionless"))  # type: ignore
+        f_oc = FractionOrganicCarbon(Q_(self.f_oc.mean(), "dimensionless"))  # type: ignore
+        f_mo = FractionMetalOxides(Q_(self.f_mo.mean(), "dimensionless"))  # type: ignore
+        f_sand = FractionSand(Q_(self.f_sand.mean(), "dimensionless"))  # type: ignore
+        f_silt = FractionSilt(Q_(self.f_silt.mean(), "dimensionless"))  # type: ignore
+        K_sat = SaturatedHydraulicConductivity(Q_(self.K_sat.mean(), "m/s"))  # type: ignore
+        vg_alpha = Q_(float(self.van_genuchten_alpha.rvs(size=size, random_state=rng)), "1/cm")  # type: ignore
+        vg_n = Q_(float(self.van_genuchten_n.rvs(size=size, random_state=rng)), "dimensionless")  # type: ignore
+        vg_l = Q_(float(self.van_genuchten_l.rvs(size=size, random_state=rng)), "dimensionless")  # type: ignore
+        return Soil(
+            name=f"Mean of {self.__class__.__qualname__}(name={self.name})",
+            rho_b=self.rho_b(f_c, f_oc, porosity),
+            porosity=porosity,
+            theta_s=self.theta_s(porosity),
+            theta_r=self.theta_r(porosity),
+            K_sat=K_sat,
+            van_genuchten=VanGenuchtenParameters(alpha=vg_alpha, n=vg_n, l=vg_l),
+            f_oc=f_oc,
+            f_mo=f_mo,
+            f_sand=f_sand,
+            f_clay=f_c,
+            f_silt=f_silt,
+        )
+
+    def sample(
+        self, size: int = 1, rng: np.random.Generator = np.random.default_rng()
+    ) -> Generator[Soil, None, None]:
+        """Sample soils in the soil class."""
+        _porosity = Porosity(Q_(self.porosity.rvs(size=size, random_state=rng), "dimensionless"))  # type: ignore
+        _f_c = FractionClay(Q_(self.f_clay.rvs(size=size, random_state=rng), "dimensionless"))  # type: ignore
+        _f_oc = FractionOrganicCarbon(Q_(self.f_oc.rvs(size=size, random_state=rng), "dimensionless"))  # type: ignore
+        _f_mo = FractionMetalOxides(Q_(self.f_mo.rvs(size=size, random_state=rng), "dimensionless"))  # type: ignore
+        _f_sand = FractionSand(Q_(self.f_sand.rvs(size=size, random_state=rng), "dimensionless"))  # type: ignore
+        _f_silt = FractionSilt(Q_(self.f_silt.rvs(size=size, random_state=rng), "dimensionless"))  # type: ignore
+        _K_sat = SaturatedHydraulicConductivity(Q_(self.K_sat.rvs(size=size, random_state=rng), "m/s"))  # type: ignore
+        _vg_alpha = Q_(self.van_genuchten_alpha.rvs(size=size, random_state=rng), "1/cm")  # type: ignore
+        _vg_n = Q_(self.van_genuchten_n.rvs(size=size, random_state=rng), "dimensionless")  # type: ignore
+        _vg_l = Q_(self.van_genuchten_l.rvs(size=size, random_state=rng), "dimensionless")  # type: ignore
+
+        for row in zip(
+            _porosity,
+            _f_c,
+            _f_oc,
+            _f_mo,
+            _f_sand,
+            _f_silt,
+            _K_sat,
+            _vg_alpha,
+            _vg_n,
+            _vg_l,
+        ):
+            porosity, f_c, f_oc, f_mo, f_sand, f_silt, K_sat, vg_alpha, vg_n, vg_l = row
+            theta_r = self.theta_r(porosity)
+            theta_s = self.theta_s(porosity)
+            rho_b = self.rho_b(f_c, f_oc, porosity)
+            yield Soil(
+                name=f"Sample of {self.__class__.__qualname__}(name={self.name})",
+                rho_b=rho_b,
+                porosity=porosity,
+                theta_s=theta_s,
+                theta_r=theta_r,
+                K_sat=K_sat,
+                van_genuchten=VanGenuchtenParameters(alpha=vg_alpha, n=vg_n, l=vg_l),
+                f_oc=f_oc,
+                f_mo=f_mo,
+                f_sand=f_sand,
+                f_clay=f_c,
+                f_silt=f_silt,
+            )

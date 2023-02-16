@@ -7,7 +7,6 @@ from typing import (
     Dict,
     Optional,
     ParamSpec,
-    Sequence,
     Tuple,
     TypeVar,
     cast,
@@ -22,6 +21,7 @@ from . import pfas as p
 from . import soil as s
 from . import solid_phase_adsorption as spa_
 from . import units as u
+from . import _typing as t
 
 Q_ = u.Quantity
 
@@ -104,7 +104,7 @@ class Simulation:
     Ci: Q_[npt.NDArray[np.float64]]
     """Initial concentration in mg/L."""
 
-    q: Q_[float]
+    q: t.Discharge
     """Infiltation rate in cm/s."""
 
     T0: Q_[float]
@@ -144,7 +144,7 @@ class SimulationResult:
     simulation: Simulation
     """Simulation parameters."""
 
-    theta: Q_[float]
+    theta: t.WaterContent
     """Water content in cm^3/cm^3."""
 
     Kaw: Q_[float]
@@ -203,49 +203,6 @@ class SimulationResult:
     """Elapsed time of the simulation."""
 
 
-def volumetric_water_content(
-    sim: Simulation,
-) -> s.WaterContent:
-    """Volumetric water content of the soil (dimensionless)."""
-    import warnings
-
-    if sim.q > sim.soil.K_sat:
-        raise ValueError(
-            "Groundwater recharge is too high for the soil under the unit gradient assumption"
-        )
-
-    # Under the assumption that dh/dz = 1, q = K_r
-    K_r = sim.q
-
-    def rel_perm_error(theta: float) -> float:
-        return (s.relative_permeability(sim.soil, s.WaterContent(Q_(theta))) - K_r).m
-
-    # initial_theta = (sim.soil.theta_s.m + sim.soil.theta_r.m) / 2
-    # initial_theta = sim.soil.theta_s.m
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        try:
-            # print(f"initial_theta = {initial_theta}")
-            theta: float = root_scalar(
-                rel_perm_error,
-                bracket=[sim.soil.theta_r.m + 1e-9, sim.soil.theta_s.m],
-                method="brentq",
-            )
-        except RuntimeWarning as e:
-            raise ValueError("Could not find a solution for the water content") from e
-
-    return s.WaterContent(u.Q_(theta, "dimensionless"))
-
-
-def root_scalar(
-    f: Callable[[float], float], bracket: Sequence[float], *args: Any, **kwargs: Any
-) -> float:
-    """Wrapper for scipy.optimize.root_scalar."""
-    import scipy.optimize as opt  # type: ignore
-
-    return opt.root_scalar(f, *args, bracket=bracket, **kwargs).root  # type: ignore
-
-
 P = ParamSpec("P")
 a = TypeVar("a")
 
@@ -265,11 +222,19 @@ def simulate(
     sim: Simulation,
 ) -> SimulationResult:
     """Simulate PFAS transport in soil."""
-    from pfas_leach_screening.analytical_soln import analytical_soln  # type: ignore
 
-    theta = volumetric_water_content(sim)
-    v = sim.q / theta
-    D = coefficient_of_dispersion(sim, v, theta)
+    theta = s.volumetric_water_content(sim.soil, sim.q)
+    v = sim.q.to_velocity(theta)
+    D = coefficient_of_dispersion(
+        sim.pfas, sim.soil, sim.L, v, theta, sim.include_diffusion
+    )
+    return run_simulation(sim, theta, v, D)
+
+
+def run_simulation(
+    sim: Simulation, theta: t.WaterContent, v: t.Velocity, D: t.DispersionCoefficient
+) -> SimulationResult:
+    from pfas_leach_screening.analytical_soln import analytical_soln  # type: ignore
 
     Ci = u.try_convert_to_substance(sim.Ci, "µmol/cm^3", sim.pfas.M)
     C_rep = u.try_convert_to_substance(sim.C_rep, "µmol/cm^3", sim.pfas.M)
@@ -387,26 +352,29 @@ def simulate(
 
 
 def calculate_retardation(
-    sim: Simulation, theta: Q_[float], C_rep: Q_[float]
+    sim: Simulation, theta: t.WaterContent, C_rep: Q_[float]
 ) -> Tuple[Q_[float], ...]:
     Kaw = sim.awa.Kaw(sim, C_rep)
     Aaw = sim.air_water_interfacial_area(sim, theta)
     Raw = Aaw * Kaw / theta
 
     Kd = sim.spa.Kd(C_rep)
-    Rs = sim.soil.rho_b * Kd / theta
+    Rs = sim.soil.rho_b.q * Kd / theta.q
 
     R = 1 + Raw + Rs
     return Kaw, Aaw, Raw, Kd, Rs, R
 
 
 def coefficient_of_dispersion(
-    sim: Simulation,
+    pfas: p.PFAS,
+    soil: s.Soil,
+    L: t.CharacteristicLength,
     v: Q_[float],
     theta: s.WaterContent,
-) -> Q_[float]:
-    if sim.include_diffusion:
-        diffusion = sim.soil.tortuosity(sim.soil, theta) * sim.pfas.diffusion
+    include_diffusion: bool = True,
+) -> t.DispersionCoefficient:
+    if include_diffusion:
+        diffusion = t.Diffusivity(soil.tortuosity(soil, theta) * pfas.diffusion)
     else:
-        diffusion = 0
-    return sim.soil.dispersivity(sim.soil, sim.L) * v + diffusion
+        diffusion = t.Diffusivity(0, "cm^2/s")
+    return t.DispersionCoefficient(soil.dispersivity(soil, L) * v + diffusion)
