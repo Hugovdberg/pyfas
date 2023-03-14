@@ -66,6 +66,11 @@ class Quantity(cast(Type[QType], ureg.Quantity), Generic[a]):  # type: ignore
     def units(self) -> UType:
         return super().units  # type: ignore
 
+    def to_base_units(self) -> Self:
+        if self._base_units is None:
+            return super().to_base_units()  # type: ignore
+        return self.to(self._base_units)
+
     def __getitem__(self, key: Any) -> Self:
         return super().__getitem__(key)  # type: ignore
 

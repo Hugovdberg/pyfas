@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: PyFAS
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Hugo
+    family-names: Lapre
+    email: hugo@tbdwebdesign.nl
+    affiliation: Utrecht University
+    orcid: 'https://orcid.org/0000-0002-5899-8219'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7664579
+    description: DOI for all versions of pyfas
+repository-code: 'https://github.com/Hugovdberg/pyfas'
+keywords:
+  - PFAS
+  - unsaturated zone
+  - screening
+license: MIT
+date-released: '2023-02-22'

@@ -1,27 +1,18 @@
 import dataclasses
 import datetime
 import warnings
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Optional,
-    ParamSpec,
-    Tuple,
-    TypeVar,
-    cast,
-)
+from typing import Any, Callable, Dict, Optional, ParamSpec, Tuple, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
+from . import _typing as t
 from . import air_water_adsorption as awa_
 from . import constants as c
 from . import pfas as p
 from . import soil as s
 from . import solid_phase_adsorption as spa_
 from . import units as u
-from . import _typing as t
 
 Q_ = u.Quantity
 
@@ -369,12 +360,14 @@ def coefficient_of_dispersion(
     pfas: p.PFAS,
     soil: s.Soil,
     L: t.CharacteristicLength,
-    v: Q_[float],
+    v: t.Velocity,
     theta: s.WaterContent,
-    include_diffusion: bool = True,
+    include_diffusion: bool,
 ) -> t.DispersionCoefficient:
     if include_diffusion:
-        diffusion = t.Diffusivity(soil.tortuosity(soil, theta) * pfas.diffusion)
+        if pfas.diffusivity is None:
+            raise ValueError("Diffusion coefficient not provided.")
+        diffusion = t.Diffusivity(soil.tortuosity(soil, theta) * pfas.diffusivity)
     else:
         diffusion = t.Diffusivity(0, "cm^2/s")
-    return t.DispersionCoefficient(soil.dispersivity(soil, L) * v + diffusion)
+    return t.DispersionCoefficient(soil.dispersivity(soil, L).q * v + diffusion)

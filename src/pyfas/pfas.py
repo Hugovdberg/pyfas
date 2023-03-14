@@ -1,8 +1,8 @@
 import dataclasses
 from typing import Optional
 
-from . import units as u
 from . import _typing as t
+from . import units as u
 
 Q_ = u.Quantity
 
@@ -22,7 +22,9 @@ class PFAS:
     # Szyszkowski_b: u.QType[float] = dataclasses.field(compare=False)
     # """Szyszkowski parameter b (dimensionless)."""
 
-    diffusion: t.Diffusivity = dataclasses.field(compare=False)
+    diffusivity: Optional[t.Diffusivity] = dataclasses.field(
+        compare=False, default=None
+    )
     """Diffusion coefficient (D0) in cm^2/s."""
 
     K_oc: Optional[Q_[float]] = dataclasses.field(compare=False, default=None)

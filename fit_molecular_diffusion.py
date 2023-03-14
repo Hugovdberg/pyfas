@@ -10,7 +10,6 @@ from typing import (
     cast,
     overload,
 )
-from typing_extensions import Self
 
 import expression
 import matplotlib.axes as mpl_axes
@@ -20,6 +19,7 @@ import pandas as pd
 import seaborn as sns  # type: ignore
 from statsmodels.regression.linear_model import OLS, RegressionResults  # type: ignore
 from statsmodels.tools import add_constant  # type: ignore
+from typing_extensions import Self
 
 sns.set_style("whitegrid")  # type: ignore
 
@@ -40,9 +40,12 @@ def map(func: Callable[[a], b], iterable: Iterable[a]) -> Generator[b, None, Non
         yield func(x)
 
 
-PFASs = pd.read_excel("PFASs.xlsx", sheet_name="PFASs").query('PFAS != "FC-4"')  # type: ignore
+PFASs = pd.read_excel("PFASs.xlsx", sheet_name="PFASs").assign(
+    n_C=lambda dataf: dataf["n_CFx"] + dataf["n_COO"] + dataf["n_CHx"],
+    n_SO3xCFx=lambda dataf: dataf["n_SO3"] * dataf["n_CFx"],
+)  # .query('PFAS != "FC-4"')  # type: ignore
 
-x_vars = ["M", "n_C", "n_CFx"]  # , "n_CHx", "n_COO", "n_SO3"]
+x_vars = ["M", "n_C", "n_CFx", "n_COO", "n_SO3"]
 y_vars = ["D0", "log D0"]
 
 IndexType = TypeVar("IndexType", int, slice)
@@ -180,19 +183,20 @@ class ModelSet:
     def from_variants(cls, variants: Iterable[FittedModelVariant]) -> Self:
         return ModelSet(list(variants))
 
+    def __len__(self) -> int:
+        return len(self.variants)
+
 
 y: "pd.Series[float]" = PFASs["log D0"]
 
 model_variants = [
-    ModelVariant("Molar mass", PFASs[["M"]]),
-    ModelVariant("Carbon chain length", PFASs[["n_C"]]),
-    ModelVariant("Number of CFx", PFASs[["n_CFx"]]),
-    ModelVariant("Molar mass and number of CFx", PFASs[["M", "n_CFx"]]),
+    ModelVariant("M", PFASs[["M"]]),
+    ModelVariant("#CFx", PFASs[["n_CFx"]]),
+    ModelVariant("#CFx and #SO3*#CFx", PFASs[["n_CFx", "n_SO3xCFx"]]),
+    ModelVariant("M and #CFx", PFASs[["M", "n_CFx"]]),
+    ModelVariant("M, #CFx and #COO", PFASs[["M", "n_CFx", "n_COO"]]),
     ModelVariant(
-        "Molar mass and number of CFx and COO", PFASs[["M", "n_CFx", "n_COO"]]
-    ),
-    ModelVariant(
-        "Molar mass and number of CFx and COO and SO3",
+        "M, #CFx, #COO and #SO3",
         PFASs[["M", "n_CFx", "n_COO", "n_SO3"]],
     ),
 ]
@@ -210,6 +214,38 @@ def fit_model_variant(
 
 
 model_set = expression.pipe(
-    model_variants, map(fit_model_variant(y)), ModelSet.from_variants
+    model_variants,
+    map(fit_model_variant(y)),
+    ModelSet.from_variants,
 )
 print(model_set.best_model.model.summary())
+print("Selected model:", model_set.best_model.name)
+print("Intercept:", model_set.best_model.model.params["const"])
+print("Slope:", model_set.best_model.model.params["n_CFx"])
+
+
+fig, axs = plt.subplots(
+    ncols=len(model_set),
+    sharey=True,
+    sharex=True,
+    figsize=(1 + 2.5 * len(model_set), 3.5),
+    dpi=200,
+    constrained_layout=True,
+)
+for ax, model_variant in zip(axs, model_set.variants):
+    sns.scatterplot(
+        x=y.values,
+        y=model_variant.model.fittedvalues,
+        hue=PFASs["n_CFx"].values,
+        style=PFASs["n_SO3xCFx"].values,
+        ax=ax,
+    )
+    sns.regplot(x=y.values, y=model_variant.model.fittedvalues, ax=ax, scatter=False)
+    ax.axline(xy1=(y.mean(), y.mean()), slope=1, color="k", linestyle="--")
+    ax.set_aspect("equal")
+    ax.set_title(model_variant.name)
+ax.set_xlim(ax.get_ylim())
+fig.supxlabel("log D0")
+fig.supylabel("log D0 (predicted)")
+fig.suptitle("Linear regression of molecular diffusion on molecular properties")
+fig.savefig("molecular_diffusion_linear_regression.png", dpi=200)

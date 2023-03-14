@@ -1,18 +1,25 @@
 from typing import Dict
 
+from . import _typing as t
 from . import air_water_adsorption as awa_
 from . import pfas
 from . import registry as r
 from . import soil
 from . import solid_phase_adsorption as spa_
 from . import units as u
-from . import _typing as t
 
 PFASs = {
+    "TFA": pfas.PFAS(
+        name="TFA",
+        M=u.Q_(114.02, "g/mol"),
+        diffusivity=pfas.estimate_diffusion_coefficient(1),
+        n_CFx=u.Q_(1),
+        n_COO=u.Q_(1),
+    ),
     "PFBA": pfas.PFAS(
         name="PFBA",
         M=u.Q_(214.0, "g/mol"),
-        diffusion=pfas.estimate_diffusion_coefficient(3),
+        diffusivity=pfas.estimate_diffusion_coefficient(3),
         K_oc=u.Q_(2.9, "L/kg"),
         K_sc=u.Q_(0.43, "L/kg"),
         n_CFx=u.Q_(3),
@@ -21,7 +28,7 @@ PFASs = {
     "PFBS": pfas.PFAS(
         name="PFBS",
         M=u.Q_(300.1, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             11e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(11.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -33,7 +40,7 @@ PFASs = {
     "PFPeA": pfas.PFAS(
         name="PFPeA",
         M=u.Q_(264.05, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             12e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(15.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -45,7 +52,7 @@ PFASs = {
     "PFHxA": pfas.PFAS(
         name="PFHxA",
         M=u.Q_(314.05, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             7.8e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(15.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -57,7 +64,7 @@ PFASs = {
     "PFHxS": pfas.PFAS(
         name="PFHxS",
         M=u.Q_(400.12, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             4.5e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(50.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -69,7 +76,7 @@ PFASs = {
     "PFHpA": pfas.PFAS(
         name="PFHpA",
         M=u.Q_(364.06, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             9.3e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(50.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -81,7 +88,7 @@ PFASs = {
     "PFOA": pfas.PFAS(
         name="PFOA",
         M=u.Q_(414.07, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             4.9e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(107.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -93,7 +100,7 @@ PFASs = {
     "PFOS": pfas.PFAS(
         name="PFOS",
         M=u.Q_(500.13, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             5.4e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(609.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -105,7 +112,7 @@ PFASs = {
     "PFNA": pfas.PFAS(
         name="PFNA",
         M=u.Q_(464.08, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             2.93e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(324.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -117,7 +124,7 @@ PFASs = {
     "PFDA": pfas.PFAS(
         name="PFDA",
         M=u.Q_(514.08, "g/mol"),  # According to Guo et al. (2022), Table 2
-        diffusion=t.Diffusivity(
+        diffusivity=t.Diffusivity(
             2.27e-6, "cm**2/s"
         ),  # According to Guo et al. (2022), Table 2
         K_oc=u.Q_(604.0, "L/kg"),  # According to Fabregat-Palau et al. (2021), Table 3
@@ -131,7 +138,7 @@ PFASs = {
         M=u.Q_(
             330.05, "g/mol"
         ),  # According to https://pubchem.ncbi.nlm.nih.gov/compound/114481
-        diffusion=pfas.estimate_diffusion_coefficient(5),
+        diffusivity=pfas.estimate_diffusion_coefficient(5),
         n_CFx=u.Q_(5),
         n_COO=u.Q_(1),
         n__O_=u.Q_(1),
