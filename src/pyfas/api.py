@@ -36,7 +36,13 @@ from .air_water_adsorption import (
 from .constants import AawFlag, CFlag, CiFlag, Ionic, SPAFlag
 from .data import PFASRegistry
 from .pfas import PFAS
-from .simulation import Simulation, SimulationResult, simulate
+from .simulation import (
+    Simulation,
+    SimulationResult,
+    air_water_interfacial_area_quadratic,
+    air_water_interfacial_area_thermodynamic,
+    simulate,
+)
 from .soil import Soil, TracerFitParameters, VanGenuchtenParameters
 from .solid_phase_adsorption import (
     FabregatPalauSorption,
@@ -79,6 +85,8 @@ __all__ = [
     "Kd_FabregatPalau",
     "Simulation",
     "SimulationResult",
+    "air_water_interfacial_area_quadratic",
+    "air_water_interfacial_area_thermodynamic",
     "simulate",
     "PFASRegistry",
     "simulation",
