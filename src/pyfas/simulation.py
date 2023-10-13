@@ -19,7 +19,7 @@ Q_ = u.Quantity
 
 def air_water_interfacial_area_thermodynamic(
     sim: "Simulation",
-    theta: Q_[float],
+    theta: s.WaterContent,
 ) -> Q_[float]:
     """Calculate the air-water interfacial area."""
     return LTM(sim.soil, theta=theta, rho_w=sim.rho_w, sigma0=sim.sigma0)
@@ -115,7 +115,7 @@ class Simulation:
     """Coefficient of ionization (chi) (dimensionless)."""
 
     air_water_interfacial_area: Callable[
-        ["Simulation", Q_[float]], Q_[float]
+        ["Simulation", s.WaterContent], Q_[float]
     ] = air_water_interfacial_area_thermodynamic
     """Flag for the type of air-water interfacial area."""
     Ci_method: c.CiFlag = c.CiFlag.AQUEOUS
@@ -164,7 +164,7 @@ class SimulationResult:
     F0: Q_[float]
     """Total PFAS input during the contaminant pulse in µmol/cm^2."""
 
-    raw_args: Tuple[Any]
+    raw_args: Tuple[Any, ...]
     """Raw arguments for the simulation."""
     raw_kwargs: Dict[str, Any]
     """Raw keyword arguments for the simulation."""
@@ -200,7 +200,7 @@ a = TypeVar("a")
 
 def function_call(
     fun: Callable[P, a], *args: P.args, **kwargs: P.kwargs
-) -> Tuple[Optional[a], Tuple[Tuple[Any], Dict[str, Any]]]:
+) -> Tuple[Optional[a], Tuple[Tuple[Any, ...], Dict[str, Any]]]:
     """Call a function with the given arguments and return the result and the raw arguments."""
     try:
         return fun(*args, **kwargs), (args, kwargs)
